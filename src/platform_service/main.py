@@ -5,8 +5,10 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
 from platform_service.api.routes.health import router as health_router
+from platform_service.api.routes.v1.cache import router as cache_router
 from platform_service.api.routes.v1.example import router as example_router
 from platform_service.core.auth import require_api_key
+from platform_service.core.cache import close_redis_client
 from platform_service.core.config import settings
 from platform_service.core.errors import AppError
 from platform_service.core.logging import configure_logging, get_logger
@@ -38,6 +40,7 @@ async def lifespan(app: FastAPI):
 
     yield
     app.state.is_shutting_down = True
+    await close_redis_client()
     logger.info("Stopping application")
 
 
@@ -102,3 +105,4 @@ app.include_router(
     tags=["example"],
     dependencies=[Depends(require_api_key)],
 )
+app.include_router(cache_router, prefix="/api/v1/cache", tags=["cache"])
