@@ -4,17 +4,14 @@ from platform_service.core.config import settings
 from platform_service.main import app
 
 
-client = TestClient(app)
-
-
-def test_live_health_check() -> None:
+def test_live_health_check(client: TestClient) -> None:
     response = client.get("/health/live")
 
     assert response.status_code == 200
     assert response.json()["status"] == "live"
 
 
-def test_ready_health_check() -> None:
+def test_ready_health_check(client: TestClient) -> None:
     response = client.get("/health/ready")
 
     assert response.status_code == 200
@@ -24,7 +21,7 @@ def test_ready_health_check() -> None:
     assert "dependencies" in body
 
 
-def test_live_health_includes_security_headers_and_request_id() -> None:
+def test_live_health_includes_security_headers_and_request_id(client: TestClient) -> None:
     response = client.get("/health/live", headers={"X-Request-ID": "req-123"})
 
     assert response.status_code == 200
@@ -33,7 +30,7 @@ def test_live_health_includes_security_headers_and_request_id() -> None:
     assert response.headers["X-Frame-Options"] == "DENY"
 
 
-def test_ready_health_reports_not_ready_when_dependency_fails(monkeypatch) -> None:
+def test_ready_health_reports_not_ready_when_dependency_fails(client: TestClient, monkeypatch) -> None:
     monkeypatch.setattr(settings, "readiness_check_urls", "http://127.0.0.1:9/unreachable")
     monkeypatch.setattr(settings, "readiness_timeout_seconds", 0.05)
 
@@ -45,7 +42,7 @@ def test_ready_health_reports_not_ready_when_dependency_fails(monkeypatch) -> No
     assert body["dependencies"][0]["status"] == "not_ready"
 
 
-def test_ready_health_reports_not_ready_while_shutting_down() -> None:
+def test_ready_health_reports_not_ready_while_shutting_down(client: TestClient) -> None:
     app.state.is_shutting_down = True
     try:
         response = client.get("/health/ready")

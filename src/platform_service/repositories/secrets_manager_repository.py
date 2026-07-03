@@ -16,24 +16,27 @@ except ImportError:  # pragma: no cover - imported only when boto3 is installed
 
 class SecretsManagerRepository:
     def __init__(self, client: Any | None = None) -> None:
-        self.client = client
-
-    def _get_client(self) -> Any:
-        if self.client is not None:
-            return self.client
+        if client is not None:
+            self.client: Any = client
+            return
 
         if boto3 is None:
-            raise AppError(
-                code="secrets_dependency_missing",
-                message="boto3 is required to use AWS Secrets Manager integration.",
-                status_code=500,
-            )
+            self.client = None  # AppError raised on first use
+            return
 
         client_kwargs: dict[str, str] = {}
         if settings.aws_region:
             client_kwargs["region_name"] = settings.aws_region
 
         self.client = boto3.client("secretsmanager", **client_kwargs)
+
+    def _get_client(self) -> Any:
+        if self.client is None:
+            raise AppError(
+                code="secrets_dependency_missing",
+                message="boto3 is required to use AWS Secrets Manager integration.",
+                status_code=500,
+            )
         return self.client
 
     def get_secret_value(self, secret_id: str) -> str:

@@ -4,10 +4,18 @@ from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
+def _package_version() -> str:
+    try:
+        from importlib.metadata import version
+        return version("aws-python-platform-template")
+    except Exception:  # pragma: no cover
+        return "0.0.0"
+
+
 class Settings(BaseSettings):
     app_name: str = Field(default="aws-python-platform-template", alias="APP_NAME")
     app_env: str = Field(default="local", alias="APP_ENV")
-    app_version: str = Field(default="0.1.0", alias="APP_VERSION")
+    app_version: str = Field(default_factory=_package_version, alias="APP_VERSION")
     aws_region: str = Field(default="", alias="AWS_REGION")
     app_host: str = Field(default="0.0.0.0", alias="APP_HOST")
     app_port: int = Field(default=8000, alias="APP_PORT")
