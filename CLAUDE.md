@@ -43,3 +43,18 @@ docker build -t app:dev . # 构建镜像
 - 禁止在路由层直接调用 boto3 或外部服务
 - 禁止修改 `core/middleware.py` 的安全头
 - 禁止硬编码密钥或 AWS 资源 ARN
+
+## 工作流程规范
+
+### 复杂功能先写规格
+实现前须先写失败测试或功能规格（输入/输出/边界），再请 Claude 使其通过。
+
+### 长会话管理
+- 每 ~30 轮或上下文超 50% 时执行 `/compact`（压缩历史，消除"中间迷失"）
+- 任务切换时执行 `/clear`
+- 大型任务分解为独立子任务并行执行
+
+### 首次使用插件（在 Claude Code 中执行两条独立提示）
+claude-mem（跨会话记忆）：
+  /plugin marketplace add thedotmack/claude-mem
+  /plugin install claude-mem@claude-mem
