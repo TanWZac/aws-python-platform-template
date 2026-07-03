@@ -105,4 +105,9 @@ app.include_router(
     tags=["example"],
     dependencies=[Depends(require_api_key)],
 )
-app.include_router(cache_router, prefix="/api/v1/cache", tags=["cache"])
+app.include_router(
+    cache_router,
+    prefix="/api/v1/cache",
+    tags=["cache"],
+    dependencies=[Depends(require_api_key)],
+)
