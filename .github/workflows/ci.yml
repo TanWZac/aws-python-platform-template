@@ -33,3 +33,31 @@ jobs:
 
       - name: Test
         run: pytest
+
+      - name: Dependency vulnerability audit
+        run: pip-audit
+
+      - name: Static security analysis
+        run: bandit -r src -ll
+
+      - name: Build container image
+        run: docker build -t aws-python-platform-template:ci .
+
+      - name: Scan container image (high/critical)
+        uses: aquasecurity/trivy-action@0.25.0
+        with:
+          image-ref: aws-python-platform-template:ci
+          format: table
+          severity: CRITICAL,HIGH
+          ignore-unfixed: true
+          exit-code: 1
+
+      - name: Generate OpenAPI artifact
+        run: |
+          python -c "import json; from platform_service.main import app; print(json.dumps(app.openapi(), indent=2))" > openapi.json
+
+      - name: Upload OpenAPI artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: openapi-schema
+          path: openapi.json

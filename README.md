@@ -90,6 +90,9 @@ http://localhost:8000/health/live
 http://localhost:8000/health/ready
 ```
 
+The API route in this template (`/api/v1/example`) supports API-key auth via `X-API-Key`.
+By default auth is disabled for local development (`AUTH_ENABLED=false`).
+
 ## Common Commands
 
 ```bash
@@ -98,9 +101,20 @@ make run
 make test
 make lint
 make format
+make security
 make docker-build
 make docker-run
 ```
+
+## Security and Runtime Controls
+
+- `ENABLE_DOCS` defaults to enabled only in local environments when unset.
+- `AUTH_ENABLED` defaults to enabled in non-local environments when unset.
+- API auth uses `X-API-Key` with comma-separated keys from `API_KEYS`.
+- Correlation IDs are propagated via `X-Request-ID` and included in logs.
+- Standard API security headers are injected on every response.
+- `/health/ready` can probe dependency URLs configured by `READINESS_CHECK_URLS`.
+- `src/platform_service/repositories/secrets_manager_repository.py` provides a reusable AWS Secrets Manager wrapper.
 
 ## Docker
 
@@ -131,6 +145,13 @@ docker run --rm -p 8000:8000 --env-file .env aws-python-platform-template
 5. Deploy with Terraform.
 6. Confirm `/health/ready` returns healthy after rollout.
 
+GitHub workflow `.github/workflows/deploy.yml` publishes an image to ECR using OIDC.
+Configure repository environment variables and secrets before use:
+
+- `vars.AWS_REGION`
+- `vars.ECR_REPOSITORY`
+- `secrets.AWS_OIDC_ROLE_ARN`
+
 ## Naming Convention
 
 Recommended future service repos:
@@ -152,5 +173,8 @@ When creating a real platform service from this template:
 - Move business logic into `services`.
 - Add database / storage integrations under `repositories`.
 - Add secrets through AWS-managed secret stores, not `.env`.
+- Configure `AUTH_ENABLED=true` and set secure API keys or replace with your platform auth provider.
+- Set `ENABLE_DOCS=false` for production.
+- Configure `READINESS_CHECK_URLS` with real dependency checks.
 - Update Docker image name in CI/CD.
 - Connect Terraform `container_image` to the pushed ECR image.

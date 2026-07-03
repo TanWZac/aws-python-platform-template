@@ -3,6 +3,14 @@ import sys
 
 from pythonjsonlogger import jsonlogger
 
+from platform_service.core.request_context import get_correlation_id
+
+
+class CorrelationIdFilter(logging.Filter):
+    def filter(self, record: logging.LogRecord) -> bool:
+        record.correlation_id = get_correlation_id()
+        return True
+
 
 def configure_logging(level: str = "INFO") -> None:
     root_logger = logging.getLogger()
@@ -10,9 +18,10 @@ def configure_logging(level: str = "INFO") -> None:
 
     handler = logging.StreamHandler(sys.stdout)
     formatter = jsonlogger.JsonFormatter(
-        "%(asctime)s %(levelname)s %(name)s %(message)s"
+        "%(asctime)s %(levelname)s %(name)s %(correlation_id)s %(message)s"
     )
     handler.setFormatter(formatter)
+    handler.addFilter(CorrelationIdFilter())
 
     root_logger.addHandler(handler)
     root_logger.setLevel(level.upper())

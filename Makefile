@@ -1,4 +1,4 @@
-.PHONY: install run test lint format docker-build docker-run clean
+.PHONY: install run test lint format security docker-build docker-run clean
 
 APP_MODULE=platform_service.main:app
 APP_HOST=0.0.0.0
@@ -20,6 +20,10 @@ lint:
 format:
 	ruff format src tests
 	ruff check src tests --fix
+
+security:
+	pip-audit
+	bandit -r src -ll
 
 docker-build:
 	docker build -t $(IMAGE_NAME) .
