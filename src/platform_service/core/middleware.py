@@ -1,3 +1,4 @@
+import re
 import time
 from uuid import uuid4
 
@@ -11,12 +12,19 @@ from platform_service.core.request_context import (
     set_correlation_id,
 )
 
+_UUID_RE = re.compile(
+    r"^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$",
+    re.IGNORECASE,
+)
+
 logger = get_logger(__name__)
 
 
 class CorrelationIdMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next) -> Response:
-        request_id = request.headers.get("X-Request-ID") or str(uuid4())
+        raw_id = request.headers.get("X-Request-ID", "")
+        # Accept only valid UUID format to prevent log injection.
+        request_id = raw_id if _UUID_RE.match(raw_id) else str(uuid4())
         token = set_correlation_id(request_id)
         start_time = time.perf_counter()
 
