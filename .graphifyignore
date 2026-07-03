@@ -1,0 +1,11 @@
+# Python runtime artifacts
+__pycache__/
+*.pyc
+.pytest_cache/
+.coverage
+htmlcov/
+.venv/
+venv/
+
+# Graphify local artifacts
+graphify-out/cost.json

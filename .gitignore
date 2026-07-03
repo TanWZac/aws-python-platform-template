@@ -12,3 +12,6 @@ build/
 .DS_Store
 .idea/
 .vscode/
+
+# Graphify — commit graphify-out/ for team knowledge graph, exclude local-only file
+graphify-out/cost.json
