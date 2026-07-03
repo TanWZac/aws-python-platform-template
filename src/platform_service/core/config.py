@@ -27,6 +27,13 @@ class Settings(BaseSettings):
     readiness_check_urls: str = Field(default="", alias="READINESS_CHECK_URLS")
     readiness_timeout_seconds: float = Field(default=1.5, alias="READINESS_TIMEOUT_SECONDS")
 
+    redis_host: str = Field(default="localhost", alias="REDIS_HOST")
+    redis_port: int = Field(default=6379, alias="REDIS_PORT")
+    redis_db: int = Field(default=0, alias="REDIS_DB")
+    redis_ssl: bool = Field(default=False, alias="REDIS_SSL")
+    redis_timeout_seconds: float = Field(default=2.0, alias="REDIS_TIMEOUT_SECONDS")
+    cache_default_ttl_seconds: int = Field(default=300, alias="CACHE_DEFAULT_TTL_SECONDS")
+
     model_config = SettingsConfigDict(
         env_file=".env",
         env_file_encoding="utf-8",
