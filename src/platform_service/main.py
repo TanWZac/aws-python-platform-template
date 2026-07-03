@@ -38,6 +38,17 @@ async def lifespan(app: FastAPI):
             "Authentication is enabled but API_KEYS is empty; protected endpoints will reject all requests"
         )
 
+    # Template seam guard: warn loudly if placeholder code is still live in non-local environments.
+    # Replace ExampleRepository.get_value(), ExampleService, and example_worker before going to production.
+    if settings.app_env != "local":
+        from platform_service.repositories.example_repository import ExampleRepository
+        if "replace this repository" in ExampleRepository().get_value():
+            logger.warning(
+                "TEMPLATE SEAM ACTIVE: ExampleRepository still returns placeholder text. "
+                "Replace it with your real integration before production use.",
+                extra={"environment": settings.app_env},
+            )
+
     yield
     app.state.is_shutting_down = True
     await close_redis_client()
